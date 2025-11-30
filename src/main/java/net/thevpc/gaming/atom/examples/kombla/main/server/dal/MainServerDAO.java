@@ -4,6 +4,7 @@ import net.thevpc.gaming.atom.examples.kombla.main.shared.engine.AppConfig;
 import net.thevpc.gaming.atom.examples.kombla.main.shared.model.DynamicGameModel;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 /**
  * Created by vpc on 10/7/16.
@@ -17,6 +18,6 @@ public interface MainServerDAO {
 
     void start(MainServerDAOListener listener, AppConfig properties) throws IOException;
 
-    void sendModelChanged(DynamicGameModel dynamicGameModel);
+    void sendModelChanged(DynamicGameModel dynamicGameModel) throws RemoteException;
 
 }

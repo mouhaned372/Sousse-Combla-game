@@ -4,6 +4,7 @@
  */
 package net.thevpc.gaming.atom.examples.kombla.main.server.engine;
 
+import net.thevpc.gaming.atom.examples.kombla.main.server.dal.RMIMainServerDAO;
 import net.thevpc.gaming.atom.examples.kombla.main.shared.engine.BaseMainEngine;
 import net.thevpc.gaming.atom.examples.kombla.main.server.dal.MainServerDAOListener;
 import net.thevpc.gaming.atom.examples.kombla.main.shared.model.DynamicGameModel;
@@ -11,9 +12,10 @@ import net.thevpc.gaming.atom.examples.kombla.main.shared.model.StartGameInfo;
 import net.thevpc.gaming.atom.annotations.AtomSceneEngine;
 import net.thevpc.gaming.atom.model.*;
 import net.thevpc.gaming.atom.examples.kombla.main.server.dal.MainServerDAO;
-import net.thevpc.gaming.atom.examples.kombla.main.server.dal.TcpMainServerDAO; // AJOUTEZ CET IMPORT
+//import net.thevpc.gaming.atom.examples.kombla.main.server.dal.TcpMainServerDAO;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.stream.Collectors;
 
 /**
@@ -22,14 +24,15 @@ import java.util.stream.Collectors;
 @AtomSceneEngine(id = "mainServer", columns = 12, rows = 12)
 public class MainServerEngine extends BaseMainEngine {
 
-    private MainServerDAO dal = new TcpMainServerDAO();
+//    private MainServerDAO dal = new TcpMainServerDAO();
+private MainServerDAO dal = new RMIMainServerDAO();
 
     @Override
     protected void sceneActivating() {
         super.sceneActivating();
 
         if (dal == null) {
-            dal = new TcpMainServerDAO();
+            dal = new RMIMainServerDAO();
             System.err.println("WARNING: dal était null, initialisation manuelle");
         }
 
@@ -91,11 +94,15 @@ public class MainServerEngine extends BaseMainEngine {
             }
             case "GAMING":
             case "GAMEOVER": {
-                dal.sendModelChanged(new DynamicGameModel(getFrame(),
-                        //copy to fix ObjectOutputStream issue!
-                        getSprites().stream().map(Sprite::copy).collect(Collectors.toList())
-                        , getPlayers().stream().map(Player::copy).collect(Collectors.toList())
-                ));
+                try {
+                    dal.sendModelChanged(new DynamicGameModel(getFrame(),
+                            //copy to fix ObjectOutputStream issue!
+                            getSprites().stream().map(Sprite::copy).collect(Collectors.toList())
+                            , getPlayers().stream().map(Player::copy).collect(Collectors.toList())
+                    ));
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
                 break;
             }
         }
